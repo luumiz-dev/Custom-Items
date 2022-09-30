@@ -1,0 +1,25 @@
+on death:
+    set {PlayerHasDiedInLast10Mins.%victim's uuid%} to true
+    set {PlayerHasDiedInLast10Mins.Location.%victim's uuid%} to location of victim
+    wait 10 minutes
+    set {PlayerHasDiedInLast10Mins.%victim's uuid%} to false
+    clear {PlayerHasDiedInLast10Mins.Location.%victim's uuid%}
+
+on right click:
+    if line 1 of lore of player's held item contains "death":
+        if {PlayerHasDiedInLast10Mins.%player's uuid%} is true:
+            if line 2 of lore of player's held item does not contain "uses left: 0":
+                teleport player to {PlayerHasDiedInLast10Mins.Location.%player's uuid%}
+                set {PlayerHasDiedInLast10Mins.%player's uuid%} to false
+                if line 2 of lore of player's held item contains "uses left: 5":
+                    set line 2 of lore of player's held item to "uses left: 4"
+                else if line 2 of lore of player's held item contains "uses left: 4":
+                    set line 2 of lore of player's held item to "uses left: 3"
+                else if line 2 of lore of player's held item contains "uses left: 3":
+                    set line 2 of lore of player's held item to "uses left: 2"
+                else if line 2 of lore of player's held item contains "uses left: 2":
+                    set line 2 of lore of player's held item to "uses left: 1"
+                else if line 2 of lore of player's held item contains "uses left: 1":
+                    set line 2 of lore of player's held item to "uses left: 0"
+        else:
+            send "this can only be used within 10 minutes of dying." to player

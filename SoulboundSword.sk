@@ -1,0 +1,25 @@
+on death:
+    #if victim has 1 diamond sword named "test sword":
+    loop all items in victim's inventory:
+        if loop-item is equal to diamond sword named "test sword":
+            if line 1 of lore of loop-item contains "soulbound":
+                #send "found sword in loop" to victim
+                if line 2 of lore of loop-item does not contain "lives left: 0":
+                    add loop-item to {PlayerDiedWithSoulboundSword_ListOfSwords.%victim's uuid%::*}
+                    set {PlayerDiedWithSoulboundSword.%victim's uuid%} to true
+                    remove loop-item from drops
+    #send "in list: %{PlayerDiedWithSoulboundSword_ListOfSwords.%victim's uuid%::*}%" to victim
+
+on respawn:
+    if {PlayerDiedWithSoulboundSword.%player's uuid%} is true:
+        loop {PlayerDiedWithSoulboundSword_ListOfSwords.%player's uuid%::*}:
+            #send "%{PlayerDiedWithSoulboundSword_ListOfSwords.%player's uuid%::%loop-index%}%" to player
+            if line 2 of lore of {PlayerDiedWithSoulboundSword_ListOfSwords.%player's uuid%::%loop-index%} contains "lives left: 3":
+                set line 2 of lore of {PlayerDiedWithSoulboundSword_ListOfSwords.%player's uuid%::%loop-index%} to "lives left: 2"
+            else if line 2 of lore of {PlayerDiedWithSoulboundSword_ListOfSwords.%player's uuid%::%loop-index%} contains "lives left: 2":
+                set line 2 of lore of {PlayerDiedWithSoulboundSword_ListOfSwords.%player's uuid%::%loop-index%} to "lives left: 1"
+            else if line 2 of lore of {PlayerDiedWithSoulboundSword_ListOfSwords.%player's uuid%::%loop-index%} contains "lives left: 1":
+                set line 2 of lore of {PlayerDiedWithSoulboundSword_ListOfSwords.%player's uuid%::%loop-index%} to "lives left: 0"
+            give player {PlayerDiedWithSoulboundSword_ListOfSwords.%player's uuid%::%loop-index%}
+        set {PlayerDiedWithSoulboundSword.%player's uuid%} to false
+        clear {PlayerDiedWithSoulboundSword_ListOfSwords.%player's uuid%::*}

@@ -1,0 +1,48 @@
+on right click:
+    if line 1 of lore of player's held item contains "multitool":
+        set {_helditem} to player's held item
+        if player's tool is any pickaxe:
+            set {_shovel} to diamond shovel
+            set durability of {_shovel} to durability of player's held item
+
+            loop enchantments of {_helditem}:
+                enchant {_shovel} with loop-value
+            
+            remove player's held item from player's inventory
+            give player {_shovel} named name of {_helditem} with lore "multitool"
+        else if player's tool is any shovel:
+            set {_axe} to diamond axe
+            set durability of {_axe} to durability of player's held item
+
+            loop enchantments of {_helditem}:
+                enchant {_axe} with loop-value
+            
+            remove player's held item from player's inventory
+            give player {_axe} named name of {_helditem} with lore "multitool"
+        else if player's tool is any axe:
+            set {_sword} to diamond sword
+            set durability of {_sword} to durability of player's held item
+
+            loop enchantments of {_helditem}:
+                enchant {_sword} with loop-value
+            
+            remove player's held item from player's inventory
+            give player {_sword} named name of {_helditem} with lore "multitool"
+        else if player's tool is any sword:
+            set {_hoe} to diamond hoe
+            set durability of {_hoe} to durability of player's held item
+
+            loop enchantments of {_helditem}:
+                enchant {_hoe} with loop-value
+            
+            remove player's held item from player's inventory
+            give player {_hoe} named name of {_helditem} with lore "multitool"
+        else if player's tool is any hoe:
+            set {_pickaxe} to diamond pickaxe
+            set durability of {_pickaxe} to durability of player's held item
+
+            loop enchantments of {_helditem}:
+                enchant {_pickaxe} with loop-value
+            
+            remove player's held item from player's inventory
+            give player {_pickaxe} named name of {_helditem} with lore "multitool"

@@ -1,0 +1,90 @@
+#Item Name: Crimson God
+#Item Type: Enchanted Book
+#Item Effect: each time u kill a mob it has a 50 or 25 chance to add one point. when the max point limit is met it adds a extra 500 or more points to the max amount and resets all your points it also adds a extra 0.1 to 0.5 damage to the item. each time u hit the limit it also adds one level when u get to level 10 u shot a Crimson spike att the closest enemy and it deals half the damage that the item has. it adds a second spike the next 10 levels then another then when it is level 30 it doesnt uppgrade the spikes anymore but when it is att level 50 it will also make the item unbreakable. to make this not be the same op u will when u get one level u cant get more points for 1-24 hours so people dont grind so they become the gods of the crimson
+#Item Lore: 0/1000 (shows the amount of points u have and the level)
+
+command /raresword [<text>] [<offlineplayer>]:
+    executable by: console and players
+    permission: rares.levelswordjosh
+    trigger:
+        if arg 1 is set:
+            if arg 1 is "give":
+                if arg-2 is set:
+                    add 1 to {rares.levelsword::id}
+                    set {_level} to 1
+                    set {_xp} to 0
+                    add "level sword" to {_Size::*}
+                    add "&7Level: &e%{_level}%" to {_Size::*}
+                    add "&7XP: &e%{_xp}%" to {_Size::*}
+                    add 1 of diamond sword named "&6Level Sword" with lore {_Size::*} to arg 2's inventory 
+
+on damage:
+    if line 1 of lore of attacker's held item contains "level sword":
+        if attacker's held item is netherite sword:
+            set {_lore::*} to lore of attacker's held item
+            set attacker's tool to air
+            add 1 of diamond sword named "&6Level Sword" with lore {_lore::*} to attacker's inventory 
+            send "&7Odd... The sword wants to stay diamond..." to attacker
+
+        set {_level} to uncolored 2nd line of lore of attacker's tool
+        replace all "Level: " in {_level} with ""
+        set {_levelInt} to {_level} parsed as integer
+        set {_damageToAdd} to 0.1 * {_levelInt}
+        if {_damageToAdd} > 0.5:
+            set {_damageToAdd} to 0.5
+        add {_damageToAdd} to damage
+        #send damage to attacker
+
+on right click with diamond sword:
+    if line 1 of lore of player's held item contains "level sword":
+        set {_level} to uncolored 2nd line of lore of player's tool
+        replace all "Level: " in {_level} with ""
+        set {_levelInt} to {_level} parsed as integer
+        if {_levelInt} >= 20:
+            if {cooldown.levelsword.%player%} isn't set:
+                set {cooldown.levelsword.%player%} to false
+            if {cooldown.levelsword.%player%} is true:
+                send "&7This ability needs to cooldown for 30 seconds." to player
+            if {cooldown.levelsword.%player%} is false:
+                set {cooldown.levelsword.%player%} to true
+                set {_looping} to true
+                loop entities in radius 10 of player:
+                    if {_looping} is true:
+                        if "%loop-entity%" is "blaze" or "chick jockey" or "creeper" or "drowned" or "evoker" or "ghast" or "guardian" or "hoglin" or "husk" or "magma cube" or "phantom" or "piglin brute" or "pillager" or "ravager" or "shulker" or "skeleton" or "silverfish" or "slime" or "spider jockey" or "stray" or "vex" or "vindicator" or "witch" or "wither skeleton" or "zoglin" or "zombie" or "zombie villager":
+                            kill loop-entity 
+                            set {_looping} to false
+                wait 30 seconds
+                set {cooldown.levelsword.%player%} to false
+
+on death:
+    if event-entity is not a player:
+        if line 1 of lore of attacker's held item contains "level sword":
+            set {_xp} to uncolored 3rd line of lore of attacker's tool
+            replace all "XP: " in {_xp} with ""
+            set {_level} to uncolored 2nd line of lore of attacker's tool
+            replace all "Level: " in {_level} with ""
+
+            #send "current xp: %{_xp}%, level: %{_level}%, id: %{_id}%" to attacker
+
+            #send "old xp: %{_xp}%" to attacker
+            set {_xpInt} to {_xp} parsed as integer
+            set {_newXp} to {_xpInt} + 2
+            #send "new xp: %{_newXp}%" to attacker
+            set line 3 of the lore of attacker's held item to "&7XP: &e%{_newXp}%"
+
+            set {_levelInt} to {_level} parsed as integer
+            set {_requiredXP} to {_levelInt} * 2500
+            #send "required xp: %{_requiredXP}%" to attacker
+            if {_newXp} >= {_requiredXP}:
+                if {_levelInt} < 20:
+                    set line 3 of the lore of attacker's held item to "&7XP: &e0"
+                    add 1 to {_levelInt}
+                    set line 2 of the lore of attacker's held item to "&7Level: &e%{_levelInt}%"
+                    send "&7Your sword has leveled up!" to attacker
+                else if {_levelInt} = 20:
+                    add 1 to {_levelInt}
+                    set line 2 of the lore of attacker's held item to "&7Level: &e%{_levelInt}%"
+                    set line 4 of the lore of attacker's held item to "&7Insta-Kill Ability"
+                    send "&7Your sword has reached the max level! It's unlocked an ability!" to attacker
+            
+            #send "current xp: %{_newXp}%, level: %{_level}%, id: %{_id}%" to attacker
