@@ -1,0 +1,25 @@
+on right click:
+    if line 1 of lore of player's held item contains "&5Shoots fireballs at enemies":
+        broadcast "1"
+        if player can build at player's location:
+            broadcast "2"
+            set {_waited} to difference between {cooldown.aether_wand.%player%} and now
+            send "%{_waited}%" to player
+            if {_waited} is less than 5 seconds:
+                send "&aYou have to wait &c%difference between 5 seconds and {_waited}% &abefore you can use again!" to player
+                stop
+            shoot fireball from player at speed 2
+            log "%player% used Aether Wand in %world% at location %location of player% to 'AetherWandUses.log'"
+            set {cooldown.aether_wand.%player%} to now 
+
+on place of redstone torch:
+    if line 1 of lore of player's held item contains "Shoots fireballs at enemies":
+        cancel event
+    else if line 1 of lore of player's off hand item contains "Shoots fireballs at enemies":
+        cancel event
+
+on place of redstone wall torch:
+    if line 1 of lore of player's held item contains "Shoots fireballs at enemies":
+        cancel event
+    else if line 1 of lore of player's off hand item contains "Shoots fireballs at enemies":
+        cancel event
