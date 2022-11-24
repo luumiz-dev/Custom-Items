@@ -1,0 +1,67 @@
+import:
+    org.bukkit.event.player.PlayerInteractEvent
+    org.bukkit.Bukkit
+    org.bukkit.block.Block
+    org.bukkit.block.data.BlockData
+
+on right click:
+    if line 1 of lore of player's held item contains "rotate":
+        if event-block is set:
+            if player can build at event-location:
+                if "%type of event-block%" contains "piston" or "observer":
+                    if "%type of event-block%" does not contain "extended":
+                        set {_x} to block data tag "facing" of event-block
+                        if "%{_x}%" is "north":
+                            set block data tag "facing" of event-block to east
+                        else if "%{_x}%" is "east":
+                            set block data tag "facing" of event-block to south
+                        else if "%{_x}%" is "south":
+                            set block data tag "facing" of event-block to west
+                        else if "%{_x}%" is "west":
+                            #set target block's facing to up ---- WORKS
+                            #set block data tag "facing" of event-block to up ---- DOES NOT WORKS
+                            #implemented in reflect before finding working syntax
+                            set {_oldData} to event-block.getBlockData()
+                            set {_newData1} to event-block.getType().getKey() 
+                            set {_newData2} to "%{_newData1}%[facing=up]"
+                            set {_blockData} to Bukkit.createBlockData({_newData2})
+                            set {_blockData2} to {_oldData}.merge({_blockData})
+                            event-block.setBlockData({_blockData2})
+                        else if "%{_x}%" is "up":
+                            set {_oldData} to event-block.getBlockData()
+                            set {_newData1} to event-block.getType().getKey() 
+                            set {_newData2} to "%{_newData1}%[facing=down]"
+                            set {_blockData} to Bukkit.createBlockData({_newData2})
+                            set {_blockData2} to {_oldData}.merge({_blockData})
+                            event-block.setBlockData({_blockData2})
+                        else if "%{_x}%" is "down":
+                            set block data tag "facing" of event-block to north
+                   
+                else if "%type of event-block%" does not contain "ladder" or "chest":
+                    set {_faceTouched} to event.getBlockFace()
+                    if "%{_faceTouched}%" is "NORTH" or "EAST" or "SOUTH" or "WEST":
+                        set {_x} to block data tag "facing" of event-block
+                        if "%{_x}%" is "north":
+                            set block data tag "facing" of event-block to east
+                        else if "%{_x}%" is "east":
+                            set block data tag "facing" of event-block to south
+                        else if "%{_x}%" is "south":
+                            set block data tag "facing" of event-block to west
+                        else if "%{_x}%" is "west":
+                            set block data tag "facing" of event-block to north
+                    else:
+                        set {_testHalf} to block data tag "half" of event-block
+                        set {_testType} to block data tag "type" of event-block
+
+                        if {_testHalf} is set:
+                            set {_x} to block data tag "half" of event-block
+                            if "%{_x}%" is "bottom":
+                                set block data tag "half" of event-block to "top"
+                            else if "%{_x}%" is "top":
+                                set block data tag "half" of event-block to "bottom"
+                        else if {_testType} is set:
+                            set {_x} to block data tag "type" of event-block
+                            if "%{_x}%" is "bottom":
+                                set block data tag "type" of event-block to "top"
+                            else if "%{_x}%" is "top":
+                                set block data tag "type" of event-block to "bottom"
