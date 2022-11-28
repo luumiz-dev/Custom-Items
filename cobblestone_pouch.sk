@@ -1,0 +1,111 @@
+on load:
+    if {luumiz.CustomItems.CobblePouch.Amount} is not set:
+        set {luumiz.CustomItems.CobblePouch.Amount} to 1
+    set {_cobblePouch} to skull of "Chimney" parsed as offlineplayer named "&7Cobblestone Pouch" with lore "&7This will store 10K cobblestone" and "&7and pick them up as you mine."
+    set {_count} to 1
+    #while {_count} <= {luumiz.CustomItems.CobblePouch.Amount}:
+    #    set {_cobblePouch} to skull of "Chimney" parsed as offlineplayer named "&7Cobblestone Pouch" with lore "&7This will store 10K cobblestone" and "&7and pick them up as you mine."
+    #    set tag "CobblePouchID" of nbt item compound of {_cobblePouch} to {_count}
+    #    set {_coalPouch} to skull of "Chimney" parsed as offlineplayer named "&aCoal Pouch" with lore "&7This will store 10K coal" and "&7and pick them up as you mine."
+    #    register new shaped recipe for {_coalPouch} using 64 coal, 64 coal, 64 coal, 64 coal, {_cobblePouch}, 64 coal, 64 coal, 64 coal and 64 coal with id "coal_pouch" in group "ore_pouches"
+    #    add 1 to {_count}
+
+command /customplayergive <offlineplayer> <text>:
+    permission: minecraft.op
+    trigger:
+        if arg-2 is "cobblepouch":
+            add 1 to {luumiz.CustomItems.CobblePouch.Amount}
+            set {_cobblePouch} to skull of "Chimney" parsed as offlineplayer named "&7Cobblestone Pouch" with lore "&7This will store 10K cobblestone" and "&7and pick them up as you mine."
+            set tag "CobblePouchID" of nbt item compound of {_cobblePouch} to {luumiz.CustomItems.CobblePouch.Amount}
+            # check if player has an open inventory slot
+            if arg-1 can hold 1 of {_cobblePouch}:
+                add 1 of {_cobblePouch} to arg-1's inventory
+            else:
+                send "You do not have space." to arg-1
+
+on mine:
+    if event-block is stone:
+        set {_itemSlot} to IsCobblePouchInPlayerInventory(player) 
+        broadcast "itemslot: %{_itemSlot}%"
+        if {_itemSlot} < 404:
+            clear drops
+            if {_itemSlot} != 99:
+                send "win" to player
+                set {_a} to slot {_itemSlot} of player's inventory
+                send "a: %{_a}%" to player
+                set {_x} to nbt item compound of {_a}
+                set {_y} to tag "CobblePouchID" of {_x}
+                add 1 to {luumiz.CustomItems.CobblePouch.ID.%{_y}%}
+                broadcast "ID: %{_y}%"
+                set line 3 of lore of slot {_itemSlot} of player's inventory to "&7Stored: %{luumiz.CustomItems.CobblePouch.ID.%{_y}%}%"
+            else:
+                send "win2" to player
+                set {_a} to player's off hand item
+                send "a: %{_a}%" to player
+                set {_x} to nbt item compound of {_a}
+                set {_y} to tag "CobblePouchID" of {_x}
+                add 1 to {luumiz.CustomItems.CobblePouch.ID.%{_y}%}
+                broadcast "ID: %{_y}%"
+                set line 3 of lore of player's off hand item to "&7Stored: %{luumiz.CustomItems.CobblePouch.ID.%{_y}%}%"
+
+on right click:
+    if line 1 of lore of player's held item contains "&7This will store 10K cobblestone":
+        set {_a} to player's held item
+        set {_x} to nbt item compound of {_a}
+        set {_y} to tag "CobblePouchID" of {_x}
+        broadcast "ID: %{_y}%"
+        if player is sneaking:
+            broadcast "sneak"
+            if {luumiz.CustomItems.CobblePouch.ID.%{_y}%} < 64:
+                if player can hold {luumiz.CustomItems.CobblePouch.ID.%{_y}%} of cobblestone:
+                    add {luumiz.CustomItems.CobblePouch.ID.%{_y}%} of cobblestone to player's inventory
+                    set {luumiz.CustomItems.CobblePouch.ID.%{_y}%} to 0
+                    set line 3 of lore of player's held item to "&7Stored: %{luumiz.CustomItems.CobblePouch.ID.%{_y}%}%"
+            else:
+                set {_canHoldMore} to true
+                while {_canHoldMore} is true:
+                    if {luumiz.CustomItems.CobblePouch.ID.%{_y}%} >= 64:
+                        if player can hold 64 of cobblestone:
+                            add 64 of cobblestone to player's inventory
+                            remove 64 from {luumiz.CustomItems.CobblePouch.ID.%{_y}%}
+                            set line 3 of lore of player's held item to "&7Stored: %{luumiz.CustomItems.CobblePouch.ID.%{_y}%}%"
+                        else:
+                            set {_canHoldMore} to false
+                    else:
+                        if player can hold {luumiz.CustomItems.CobblePouch.ID.%{_y}%} of cobblestone:
+                            add {luumiz.CustomItems.CobblePouch.ID.%{_y}%} of cobblestone to player's inventory
+                            set {luumiz.CustomItems.CobblePouch.ID.%{_y}%} to 0
+                            set line 3 of lore of player's held item to "&7Stored: %{luumiz.CustomItems.CobblePouch.ID.%{_y}%}%"
+                            set {_canHoldMore} to false
+                        else:
+                            set {_canHoldMore} to false
+        else:
+            if {luumiz.CustomItems.CobblePouch.ID.%{_y}%} < 64:
+                if player can hold {luumiz.CustomItems.CobblePouch.ID.%{_y}%} of cobblestone:
+                    add {luumiz.CustomItems.CobblePouch.ID.%{_y}%} of cobblestone to player's inventory
+                    set {luumiz.CustomItems.CobblePouch.ID.%{_y}%} to 0
+                    set line 3 of lore of player's held item to "&7Stored: %{luumiz.CustomItems.CobblePouch.ID.%{_y}%}%"
+            else:
+                if player can hold 64 of cobblestone:
+                    add 64 of cobblestone to player's inventory
+                    remove 64 from {luumiz.CustomItems.CobblePouch.ID.%{_y}%}
+                    set line 3 of lore of player's held item to "&7Stored: %{luumiz.CustomItems.CobblePouch.ID.%{_y}%}%"
+
+function IsCobblePouchInPlayerInventory(p: player) :: number:
+    set {_count} to 0
+    loop 36 times:
+        set {_slotItem} to slot {_count} of {_p}'s inventory
+        if line 1 of {_slotItem}'s lore contains "&7This will store 10K cobblestone":
+            broadcast "%{_count}%"
+            return {_count}
+        else:
+            add 1 to {_count}
+    if line 1 of lore of {_p}'s offhand item contains "&7This will store 10K cobblestone":
+        return 99
+    return 404
+
+on place:
+    if line 1 of lore of player's held item contains "&7This will store 10K cobblestone":
+        cancel event
+    else if line 1 of lore of player's off hand item contains "&7This will store 10K cobblestone":
+        cancel event
