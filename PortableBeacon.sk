@@ -1,0 +1,403 @@
+# hook into essentials afk check to stop beacon\
+
+import:
+    org.bukkit.Bukkit
+    com.earth2me.essentials.Essentials
+    com.earth2me.essentials.IUser
+
+command /cpg_beacon:
+    permission: cpg
+    trigger:
+        set {_x} to beacon named "&8Portable Beacon" with lore "&7I have the power!", "&7", "&7Hold this in your off hand to harness it's power.", "&aShift-Right Click &7to toggle the beacon on and off.", "&aShift-Left Click &7to open the beacon menu.", "&7", and "&9Unplaceable"
+        set tag "customrare" of nbt compound of {_x} to "portablebeacon"
+        give player 1 of {_x}
+
+command /cpgfix:
+    permission: cpg
+    trigger:
+        clear {rare.portablebeacon.%player's uuid%} 
+        clear {rare.portablebeacon.effect.%player's uuid%}
+        clear {rare.portablebeacon.cooldown.%player's uuid%}
+        clear {rare.portablebeacon.timer.%player's uuid%}
+        clear {rare.portablebeacon.isActive.%player's uuid%}
+        clear {rare.portablebeacon.quickstopper.%player's uuid%}
+
+on right click:
+    if player is sneaking:
+        if player's off hand item is beacon:
+            set {_a} to player's off hand item
+            set {_x} to nbt compound of {_a}
+            set {_y} to tag "customrare" of {_x}
+            if {_y} is "portablebeacon":
+                if {rare.portablebeacon.isActive.%player's uuid%} is not set:
+                    set {rare.portablebeacon.isActive.%player's uuid%} to false
+                if {rare.portablebeacon.isActive.%player's uuid%} is false:
+                    if {rare.portablebeacon.%player's uuid%} is not set:
+                        send "&7You need to select a fuel for the beacon to use!" to player
+                        stop
+                    if {rare.portablebeacon.effect.%player's uuid%} is not set:
+                        send "&7You need to select an effect for the beacon to give!" to player
+                        stop
+                    if {rare.portablebeacon.quickstopper.%player's uuid%} is true:
+                        send "&7Please wait for the beacon to cooldown..." to player
+                        stop
+
+                    send "&6Portable Beacon is ON." to player
+                    set {rare.portablebeacon.isActive.%player's uuid%} to true
+                    while {rare.portablebeacon.isActive.%player's uuid%} is true:
+                        if player's off hand item is beacon:
+                            set {_c} to Bukkit.getPluginManager().getPlugin("Essentials").getUser(player).isAfk()
+                            if {_c} is true:
+                                send "&7Looks like you're AFK. Beacon shutting down..." to player
+                                set {rare.portablebeacon.isActive.%player's uuid%} to false
+                                clear {rare.portablebeacon.%player's uuid%} 
+                                clear {rare.portablebeacon.effect.%player's uuid%}
+                                clear {rare.portablebeacon.cooldown.%player's uuid%}
+                                clear {rare.portablebeacon.timer.%player's uuid%}
+                                clear {rare.portablebeacon.quickstopper.%player's uuid%}
+                                stop
+                            if {rare.portablebeacon.quickstopper.%player's uuid%} is true:
+                                send "&7Please wait for the beacon to cooldown..." to player
+                                stop
+                            set {_x} to 10 seconds
+                            if player has 1 of ({rare.portablebeacon.%player's uuid%} parsed as item):
+                                set {_x} to "%{rare.portablebeacon.timer.%player's uuid%}% seconds" parsed as timespan
+                                if {rare.portablebeacon.effect.%player's uuid%} is "speed":
+                                    #if player does not have speed:
+                                    apply speed to the player for {_x}
+                                    remove 1 of ({rare.portablebeacon.%player's uuid%} parsed as item) from player
+                                else if {rare.portablebeacon.effect.%player's uuid%} is "haste":
+                                    #if player does not have haste:
+                                    apply haste to the player for {_x}
+                                    remove 1 of ({rare.portablebeacon.%player's uuid%} parsed as item) from player
+                                else if {rare.portablebeacon.effect.%player's uuid%} is "resistance 2":
+                                    #if player does not have resistance:
+                                    apply resistance 2 to the player for {_x}
+                                    remove 1 of ({rare.portablebeacon.%player's uuid%} parsed as item) from player
+                                else if {rare.portablebeacon.effect.%player's uuid%} is "jump boost 2":
+                                    #if player does not have jump boost:
+                                    apply jump boost 2 to the player for {_x}
+                                    remove 1 of ({rare.portablebeacon.%player's uuid%} parsed as item) from player
+                                else if {rare.portablebeacon.effect.%player's uuid%} is "strength":
+                                    #if player does not have strength:
+                                    apply strength to the player for {_x}
+                                    remove 1 of ({rare.portablebeacon.%player's uuid%} parsed as item) from player
+                                else if {rare.portablebeacon.effect.%player's uuid%} is "regeneration":
+                                    #if player does not have regeneration:
+                                    apply regeneration to the player for {_x}
+                                    remove 1 of ({rare.portablebeacon.%player's uuid%} parsed as item) from player
+                                else if {rare.portablebeacon.effect.%player's uuid%} is "water breathing 2":
+                                    #if player does not have water breathing:
+                                    apply water breathing 2 to the player for {_x}
+                                    remove 1 of ({rare.portablebeacon.%player's uuid%} parsed as item) from player
+                                set {rare.portablebeacon.quickstopper.%player's uuid%} to true
+                                wait {_x}
+                                set {rare.portablebeacon.quickstopper.%player's uuid%} to false
+                            else:
+                                set {rare.portablebeacon.isActive.%player's uuid%} to false
+                                send "&7You don't have enough fuel to power the beacon. Shutting down..." to player
+                                set {rare.portablebeacon.isActive.%player's uuid%} to false
+                                clear {rare.portablebeacon.%player's uuid%} 
+                                clear {rare.portablebeacon.effect.%player's uuid%}
+                                clear {rare.portablebeacon.cooldown.%player's uuid%}
+                                clear {rare.portablebeacon.timer.%player's uuid%}
+                                clear {rare.portablebeacon.quickstopper.%player's uuid%}
+                        else:
+                            set {rare.portablebeacon.isActive.%player's uuid%} to false
+                            clear {rare.portablebeacon.%player's uuid%} 
+                            clear {rare.portablebeacon.effect.%player's uuid%}
+                            clear {rare.portablebeacon.cooldown.%player's uuid%}
+                            clear {rare.portablebeacon.timer.%player's uuid%}
+                            clear {rare.portablebeacon.quickstopper.%player's uuid%}
+                else if {rare.portablebeacon.isActive.%player's uuid%} is true:
+                    send "&6Portable Beacon is OFF." to player
+                    if {rare.portablebeacon.effect.%player's uuid%} is "speed":
+                        remove speed from the player
+                    else if {rare.portablebeacon.effect.%player's uuid%} is "haste":
+                        remove haste from the player
+                    else if {rare.portablebeacon.effect.%player's uuid%} is "resistance 2":
+                        remove resistance from the player
+                    else if {rare.portablebeacon.effect.%player's uuid%} is "jump boost 2":
+                        remove jump boost from the player
+                    else if {rare.portablebeacon.effect.%player's uuid%} is "strength":
+                        remove strength from the player
+                    else if {rare.portablebeacon.effect.%player's uuid%} is "regeneration":
+                        remove regeneration from the player
+                    else if {rare.portablebeacon.effect.%player's uuid%} is "water breathing 2":
+                        remove water breathing from the player
+                    set {rare.portablebeacon.isActive.%player's uuid%} to false
+                    clear {rare.portablebeacon.%player's uuid%} 
+                    clear {rare.portablebeacon.effect.%player's uuid%}
+                    clear {rare.portablebeacon.cooldown.%player's uuid%}
+                    clear {rare.portablebeacon.timer.%player's uuid%}
+                    clear {rare.portablebeacon.quickstopper.%player's uuid%}
+
+on left click:
+    if player is sneaking:
+        if player's off hand item is beacon:
+            set {_a} to player's off hand item
+            set {_x} to nbt compound of {_a}
+            set {_y} to tag "customrare" of {_x}
+            if {_y} is "portablebeacon":
+                if {rare.portablebeacon.isActive.%player's uuid%} is not set:
+                    set {rare.portablebeacon.isActive.%player's uuid%} to false
+                if {rare.portablebeacon.isActive.%player's uuid%} is false:
+                    set metadata tag "portable_beacon" of player to chest inventory with 5 rows named colored "Select Beacon Fuel And Effect"
+                    set {_chestslot} to 0
+                    set {_item} to 1
+                    loop 18 times:
+                        set slot {_chestslot} of metadata tag "portable_beacon" of player to grey stained glass pane named colored "&7"
+                        add 1 to {_chestslot}
+                    loop 9 times:
+                        set slot {_chestslot} of metadata tag "portable_beacon" of player to black stained glass pane named colored "&7"
+                        add 1 to {_chestslot}
+                    loop 18 times:
+                        set slot {_chestslot} of metadata tag "portable_beacon" of player to grey stained glass pane named colored "&7"
+                        add 1 to {_chestslot}
+
+                    # if a player has an active fuel already, we need to display that
+                    if {rare.portablebeacon.%player's uuid%} is "coal":
+                        set slot 2 of metadata tag "portable_beacon" of player to green stained glass pane named colored "&7"
+                    else if {rare.portablebeacon.%player's uuid%} is "iron ingot":
+                        set slot 3 of metadata tag "portable_beacon" of player to green stained glass pane named colored "&7"
+                    else if {rare.portablebeacon.%player's uuid%} is "gold ingot":
+                        set slot 4 of metadata tag "portable_beacon" of player to green stained glass pane named colored "&7"
+                    else if {rare.portablebeacon.%player's uuid%} is "emerald":
+                        set slot 5 of metadata tag "portable_beacon" of player to green stained glass pane named colored "&7"
+                    else if {rare.portablebeacon.%player's uuid%} is "diamond":
+                        set slot 6 of metadata tag "portable_beacon" of player to green stained glass pane named colored "&7"
+
+                    set slot 0 of metadata tag "portable_beacon" of player to furnace named "&cFuel Source" with lore "&7Select a fuel source to be used from" and "&7your inventory to power the beacon."
+                    set slot 11 of metadata tag "portable_beacon" of player to coal named "&cCoal"
+                    set slot 12 of metadata tag "portable_beacon" of player to iron ingot named "&cIron Ingot"
+                    set slot 13 of metadata tag "portable_beacon" of player to gold ingot named "&cGold Ingot"
+                    set slot 14 of metadata tag "portable_beacon" of player to emerald named "&cEmerald"
+                    set slot 15 of metadata tag "portable_beacon" of player to diamond named "&cDiamond"
+
+                    #if a player has an active effect already, we need to display that
+                    if {rare.portablebeacon.effect.%player's uuid%} is "speed":
+                        set slot 37 of metadata tag "portable_beacon" of player to green stained glass pane named colored "&7"
+                    else if {rare.portablebeacon.effect.%player's uuid%} is "haste":
+                        set slot 38 of metadata tag "portable_beacon" of player to green stained glass pane named colored "&7"
+                    else if {rare.portablebeacon.effect.%player's uuid%} is "resistance 2":
+                        set slot 39 of metadata tag "portable_beacon" of player to green stained glass pane named colored "&7"
+                    else if {rare.portablebeacon.effect.%player's uuid%} is "jump boost 2":
+                        set slot 40 of metadata tag "portable_beacon" of player to green stained glass pane named colored "&7"
+                    else if {rare.portablebeacon.effect.%player's uuid%} is "strength":
+                        set slot 41 of metadata tag "portable_beacon" of player to green stained glass pane named colored "&7"
+                    else if {rare.portablebeacon.effect.%player's uuid%} is "regeneration":
+                        set slot 42 of metadata tag "portable_beacon" of player to green stained glass pane named colored "&7"
+                    else if {rare.portablebeacon.effect.%player's uuid%} is "water breathing 2":
+                        set slot 43 of metadata tag "portable_beacon" of player to green stained glass pane named colored "&7"
+
+                    set slot 36 of metadata tag "portable_beacon" of player to beacon named "&6Chosen Effect" with lore "&7Select an effect to be given" and "&7while holding this item."
+                    set slot 28 of metadata tag "portable_beacon" of player to glowing leather boots named "Speed I"
+                    set slot 29 of metadata tag "portable_beacon" of player to glowing gold pickaxe named "Haste I"
+                    set slot 30 of metadata tag "portable_beacon" of player to glowing shield named "Resistance II"
+                    set slot 31 of metadata tag "portable_beacon" of player to glowing rabbit's foot named "Jump Boost II"
+                    set slot 32 of metadata tag "portable_beacon" of player to glowing iron sword named "Strength I"
+                    set slot 33 of metadata tag "portable_beacon" of player to glowing apple named "Regeneration I"
+                    set slot 34 of metadata tag "portable_beacon" of player to glowing conduit named "Water Breathing II"
+
+                    open (metadata tag "portable_beacon" of player) to player
+                else:
+                    send "&7You need to turn off the beacon before modifying it!" to player
+
+on inventory click:
+    set {_inv} to the clicked inventory
+    if event-inventory = (metadata tag "portable_beacon" of player):
+        cancel event
+
+        # #############################################################################
+        #                          FUEL SELECTION GUI
+        # #############################################################################
+
+        #coal
+        if index of event-slot is 11:
+            if player has 1 of coal:
+                if {rare.portablebeacon.%player's uuid%} is not "coal":
+                    set {_chestslot} to 1
+                    loop 7 times:
+                        set slot {_chestslot} of metadata tag "portable_beacon" of player to grey stained glass pane named colored "&7"
+                        add 1 to {_chestslot}
+                    set slot 2 of metadata tag "portable_beacon" of player to green stained glass pane named colored "&7"
+                    set {rare.portablebeacon.%player's uuid%} to "coal"
+                    set {rare.portablebeacon.cooldown.%player's uuid%} to now
+                    set {rare.portablebeacon.timer.%player's uuid%} to 30
+                    send "&7Fuel source set to: coal" to player
+            else:
+                send "&7You do not have any coal." to player
+            
+        #iron
+        else if index of event-slot is 12:
+            if player has 1 of iron ingot:
+                if {rare.portablebeacon.%player's uuid%} is not "iron ingot":
+                    set {_chestslot} to 1
+                    loop 7 times:
+                        set slot {_chestslot} of metadata tag "portable_beacon" of player to grey stained glass pane named colored "&7"
+                        add 1 to {_chestslot}
+                    set slot 3 of metadata tag "portable_beacon" of player to green stained glass pane named colored "&7"
+                    set {rare.portablebeacon.%player's uuid%} to "iron ingot"
+                    set {rare.portablebeacon.cooldown.%player's uuid%} to now
+                    set {rare.portablebeacon.timer.%player's uuid%} to 180
+                    send "&7Fuel source set to: iron ingot" to player
+            else:
+                send "&7You do not have any iron ingots." to player
+
+        #gold
+        else if index of event-slot is 13:
+            if player has 1 of gold ingot:
+                if {rare.portablebeacon.%player's uuid%} is not "gold ingot":
+                    set {_chestslot} to 1
+                    loop 7 times:
+                        set slot {_chestslot} of metadata tag "portable_beacon" of player to grey stained glass pane named colored "&7"
+                        add 1 to {_chestslot}
+                    set slot 4 of metadata tag "portable_beacon" of player to green stained glass pane named colored "&7"
+                    set {rare.portablebeacon.%player's uuid%} to "gold ingot"
+                    set {rare.portablebeacon.cooldown.%player's uuid%} to now
+                    set {rare.portablebeacon.timer.%player's uuid%} to 480
+                    send "&7Fuel source set to: gold ingot" to player
+            else:
+                send "&7You do not have any gold ingots." to player
+
+        #emerald
+        else if index of event-slot is 14:
+            if player has 1 of emerald:
+                if {rare.portablebeacon.%player's uuid%} is not "emerald":
+                    set {_chestslot} to 1
+                    loop 7 times:
+                        set slot {_chestslot} of metadata tag "portable_beacon" of player to grey stained glass pane named colored "&7"
+                        add 1 to {_chestslot}
+                    set slot 5 of metadata tag "portable_beacon" of player to green stained glass pane named colored "&7"
+                    set {rare.portablebeacon.%player's uuid%} to "emerald"
+                    set {rare.portablebeacon.cooldown.%player's uuid%} to now
+                    set {rare.portablebeacon.timer.%player's uuid%} to 360
+                    send "&7Fuel source set to: emerald" to player
+            else:
+                send "&7You do not have any emeralds." to player
+
+        #diamond
+        else if index of event-slot is 15:
+            if player has 1 of diamond:
+                if {rare.portablebeacon.%player's uuid%} is not "diamond":
+                    set {_chestslot} to 1
+                    loop 7 times:
+                        set slot {_chestslot} of metadata tag "portable_beacon" of player to grey stained glass pane named colored "&7"
+                        add 1 to {_chestslot}
+                    set slot 6 of metadata tag "portable_beacon" of player to green stained glass pane named colored "&7"
+                    set {rare.portablebeacon.%player's uuid%} to "diamond"
+                    set {rare.portablebeacon.cooldown.%player's uuid%} to now
+                    set {rare.portablebeacon.timer.%player's uuid%} to 900
+                    send "&7Fuel source set to: diamond" to player
+            else:
+                send "&7You do not have any diamonds." to player
+
+    # #############################################################################
+    #                          EFFECT SELECTION GUI
+    # #############################################################################
+
+        # speed I
+        else if index of event-slot is 28:
+            if {rare.portablebeacon.effect.%player's uuid%} is not "speed":
+                set {rare.portablebeacon.effect.%player's uuid%} to "speed"
+                set {_chestslot} to 37
+                loop 7 times:
+                    set slot {_chestslot} of metadata tag "portable_beacon" of player to grey stained glass pane named colored "&7"
+                    add 1 to {_chestslot}
+                set slot 37 of metadata tag "portable_beacon" of player to green stained glass pane named colored "&7"
+                send "&7Beacon effect set to: Speed I" to player
+    
+        # haste I
+        else if index of event-slot is 29:
+            if {rare.portablebeacon.effect.%player's uuid%} is not "haste":
+                set {rare.portablebeacon.effect.%player's uuid%} to "haste"
+                set {_chestslot} to 37
+                loop 7 times:
+                    set slot {_chestslot} of metadata tag "portable_beacon" of player to grey stained glass pane named colored "&7"
+                    add 1 to {_chestslot}
+                set slot 38 of metadata tag "portable_beacon" of player to green stained glass pane named colored "&7"
+                send "&7Beacon effect set to: Haste I" to player
+        
+        # resistance II
+        else if index of event-slot is 30:
+            if {rare.portablebeacon.effect.%player's uuid%} is not "resistance 2":
+                set {rare.portablebeacon.effect.%player's uuid%} to "resistance 2"
+                set {_chestslot} to 37
+                loop 7 times:
+                    set slot {_chestslot} of metadata tag "portable_beacon" of player to grey stained glass pane named colored "&7"
+                    add 1 to {_chestslot}
+                set slot 39 of metadata tag "portable_beacon" of player to green stained glass pane named colored "&7"
+                send "&7Beacon effect set to: Resistance I" to player
+        
+        # jump boost II
+        else if index of event-slot is 31:
+            if {rare.portablebeacon.effect.%player's uuid%} is not "jump boost 2":
+                set {rare.portablebeacon.effect.%player's uuid%} to "jump boost 2"
+                set {_chestslot} to 37
+                loop 7 times:
+                    set slot {_chestslot} of metadata tag "portable_beacon" of player to grey stained glass pane named colored "&7"
+                    add 1 to {_chestslot}
+                set slot 40 of metadata tag "portable_beacon" of player to green stained glass pane named colored "&7"
+                send "&7Beacon effect set to: Jump Boost I" to player
+        
+        # strength I
+        else if index of event-slot is 32:
+            if {rare.portablebeacon.effect.%player's uuid%} is not "strength":
+                set {rare.portablebeacon.effect.%player's uuid%} to "strength"
+                set {_chestslot} to 37
+                loop 7 times:
+                    set slot {_chestslot} of metadata tag "portable_beacon" of player to grey stained glass pane named colored "&7"
+                    add 1 to {_chestslot}
+                set slot 41 of metadata tag "portable_beacon" of player to green stained glass pane named colored "&7"
+                send "&7Beacon effect set to: Strength" to player
+        
+        # regeneration I
+        else if index of event-slot is 33:
+            if {rare.portablebeacon.effect.%player's uuid%} is not "regeneration":
+                set {rare.portablebeacon.effect.%player's uuid%} to "regeneration"
+                set {_chestslot} to 37
+                loop 7 times:
+                    set slot {_chestslot} of metadata tag "portable_beacon" of player to grey stained glass pane named colored "&7"
+                    add 1 to {_chestslot}
+                set slot 42 of metadata tag "portable_beacon" of player to green stained glass pane named colored "&7"
+                send "&7Beacon effect set to: Regeneration I" to player
+        
+        # water breathing II
+        else if index of event-slot is 34:
+            if {rare.portablebeacon.effect.%player's uuid%} is not "water breathing 2":
+                set {rare.portablebeacon.effect.%player's uuid%} to "water breathing 2"
+                set {_chestslot} to 37
+                loop 7 times:
+                    set slot {_chestslot} of metadata tag "portable_beacon" of player to grey stained glass pane named colored "&7"
+                    add 1 to {_chestslot}
+                set slot 43 of metadata tag "portable_beacon" of player to green stained glass pane named colored "&7"
+                send "&7Beacon effect set to: Water Breathing II" to player
+
+on quit:
+    if {rare.portablebeacon.isActive.%player's uuid%} is true:
+        clear {rare.portablebeacon.%player's uuid%} 
+        clear {rare.portablebeacon.effect.%player's uuid%}
+        clear {rare.portablebeacon.cooldown.%player's uuid%}
+        clear {rare.portablebeacon.timer.%player's uuid%}
+        clear {rare.portablebeacon.isActive.%player's uuid%}
+        clear {rare.portablebeacon.quickstopper.%player's uuid%}
+        set {rare.portablebeacon.joinmsg.%player's uuid%} to true
+
+on join:
+    if {rare.portablebeacon.joinmsg.%player's uuid%} is true:
+        send "&7You're beacon shut down while you were offline." to player
+
+
+on place of beacon:
+    if player's held item is beacon:
+        set {_a} to player's held item
+        set {_x} to nbt compound of {_a}
+        set {_y} to tag "customrare" of {_x}
+        if {_y} is "portablebeacon":
+            cancel event
+    if player's off hand item is beacon:
+        set {_a} to player's off hand item
+        set {_x} to nbt compound of {_a}
+        set {_y} to tag "customrare" of {_x}
+        if {_y} is "portablebeacon":
+            cancel event
